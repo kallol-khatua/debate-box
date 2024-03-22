@@ -1,40 +1,158 @@
 <!DOCTYPE html>
 
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
+    <title>Debate-Box</title>
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/rooms/materialize.min.css" />
+    <link rel="stylesheet" href="/css/rooms/style.css" />
+  </head>
 
-    <meta charset="UTF-8">
-
-    <title>Group Video Call</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/materialize.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
-
-</head>
-
-<body>
+  <body>
+    <a href="/users/logout">Logout</a>
     <div class="main-wrap">
-        <div class="call-wrap card" style="z-index: 99">
-
-            <div class="action-wrap" style="display: flex;justify-content: center; align-items: center;padding:30px;">
-                <div style="display:flex; justify-content:center;align-items:center;background-color:#00554d;height:50px;max-width:200px;min-width:200px;font-size:20px;align-self:center;color:white;margin-right:50px;border-radius:5px;" class="host-meeting">Host</div>
-                <div style="display:flex; justify-content:center;align-items:center;background-color:#00554d;height:50px;max-width:200px;min-width:200px;font-size:20px;align-self:center;color:white;border-radius:5px;" class="join-meeting">Join</div>
-            </div>
-
+      <div class="call-wrap card" style="z-index: 99">
+        <div
+          class="action-wrap"
+          style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              background-color: #00554d;
+              height: 50px;
+              max-width: 200px;
+              min-width: 200px;
+              font-size: 20px;
+              align-self: center;
+              color: white;
+              margin-right: 50px;
+              border-radius: 5px;
+            "
+            class="host-meeting"
+            id="host-meeting"
+            onclick="hostMeeting()"
+          >
+            Host
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              background-color: #00554d;
+              height: 50px;
+              max-width: 200px;
+              min-width: 200px;
+              font-size: 20px;
+              align-self: center;
+              color: white;
+              border-radius: 5px;
+            "
+            class="join-meeting"
+            onclick="joinMeeting()"
+          >
+            Join
+          </div>
         </div>
-
-
+      </div>
     </div>
-
+    <!-- <div class="row" >
+      <form class="col s12">
+        <a href="#"><i class="material-icons prefix">arrow_back</i></a>
+        <div class="row">
+          <div class="input-field col s6" style="width: 100%">
+            <i class="material-icons prefix">call_to_action</i>
+            <input id="icon_prefix" type="text" class="validate join-value" />
+            <label for="icon_prefix">Meeting ID [Without Space]</label>
+          </div>
+        </div>
+        <button
+          class="btn waves-effect waves-light teal darken-2 join-submit"
+          type="submit"
+          name="action"
+        >
+          Join<i class="material-icons right">send</i>
+        </button>
+      </form>
+    </div> -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="assets/js/materialize.min.js"></script>
-    <script src="assets/js/client.js"></script>
+    <script src="/js/rooms/materialize.min.js"></script>
+    <script src="/js/rooms/client.js"></script>
     <script>
+      // creating meeting room
+      const hostMeeting = () => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "/rooms/hostMeeting", true);
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
 
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+              const response = JSON.parse(xhr.responseText);
+              if (response.success) {
+                let url =
+                  window.location.origin +
+                  `/rooms/meeting?meetingId=${response.meetingId}`;
+                window.location.href = url;
+              } else {
+                alert("try again");
+              }
+            } else {
+              alert("Error occurred while making the request");
+            }
+          }
+        };
 
+        xhr.send();
+      };
+
+      //   join a meeting room
+      const joinMeeting = async () => {
+        let meetingId = await prompt("Enter meeting id");
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", `/rooms/joinMeeting?meetingId=${meetingId}`, true);
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+              const response = JSON.parse(xhr.responseText);
+              if (response.success) {
+                let url =
+                  window.location.origin +
+                  `/rooms/meeting?meetingId=${response.meetingId}`;
+                window.location.href = url;
+              } else {
+                alert(response.message);
+              }
+            } else {
+              alert("Error occurred while making the request");
+            }
+          }
+        };
+
+        xhr.send();
+      };
     </script>
-
-</body>
-
+  </body>
 </html>

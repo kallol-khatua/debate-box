@@ -35,7 +35,7 @@ const userSchema = new Schema({
     //     },
     //     filename: String
     // }
-});
+},{timestamps: true});
 
 userSchema.plugin(passportLocalMongoose);
 

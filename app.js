@@ -22,7 +22,9 @@ const io = socketIO(server)
 const User = require('./models/user');
 const { isLoggedIn, isVerified } = require('./utils/middlewares');
 
+// routes
 const userRouter = require("./routes/user");
+const roomRouter = require("./routes/room");
 
 async function main() {
     await mongoose.connect("mongodb://127.0.0.1:27017/debatebox");
@@ -88,10 +90,12 @@ app.use((req, res, next) => {
 });
 
 app.get("/", isLoggedIn, isVerified, (req, res, next) => {
-    res.render("home.ejs")
+    res.render("rooms/index.ejs")
 });
 
+// using routes
 app.use("/users", userRouter);
+app.use("/rooms", roomRouter);
 
 server.listen(process.env.PORT || 8080, () => {
     console.log("listening to post 8080");
