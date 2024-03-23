@@ -19,12 +19,16 @@ const socketIO = require("socket.io");
 const server = http.createServer(app);
 const io = socketIO(server)
 
+// models
 const User = require('./models/user');
+const Room = require('./models/room');
+
 const { isLoggedIn, isVerified } = require('./utils/middlewares');
 
 // routes
 const userRouter = require("./routes/user");
 const roomRouter = require("./routes/room");
+const Member = require('./models/member');
 
 async function main() {
     await mongoose.connect("mongodb://127.0.0.1:27017/debatebox");
@@ -81,6 +85,33 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+// socket io
+// io.on("connection", async(socket) => {
+//     let userId = socket.handshake.auth.token;
+//     await User.findByIdAndUpdate({ _id: userId }, { is_online: true, socket_id: socket.id });
+//     socket.broadcast.emit("getOnlineUser", userId);
+
+//     socket.on('disconnect', async () => {
+//         let userId = socket.handshake.auth.token;
+//         await User.findByIdAndUpdate({ _id: userId }, { is_online: false, socket_id: "" });
+//         socket.broadcast.emit("getOfflineUser", userId);
+//     });
+// }) 
+
+// socket of stream page
+let sd = io.of("/stream-debate");
+sd.on("connection", async(socket) => {
+    let userId = socket.handshake.auth.token;
+    let user = await User.findByIdAndUpdate({ _id: userId }, { is_online: true, socket_id: socket.id });
+    socket.broadcast.emit("getOnlineUser", {userId, user});
+
+    socket.on('disconnect', async () => {
+        let userId = socket.handshake.auth.token;
+        await User.findByIdAndUpdate({ _id: userId }, { is_online: false, socket_id: "" });
+        socket.broadcast.emit("getOfflineUser", userId);
+    });
+}) 
+
 app.use((req, res, next) => {
     res.cookie('user', JSON.stringify(req.user));
     res.locals.success = req.flash("success");
@@ -89,8 +120,12 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get("/", isLoggedIn, isVerified, (req, res, next) => {
-    res.render("rooms/index.ejs")
+app.get("/", isLoggedIn, isVerified, async(req, res, next) => {
+    let rooms = await Room.find({host: req.user._id});
+    let joinedRooms = await Member.find({memberId: req.user._id}).populate("roomId");
+    // console.log(joinedRooms);
+    // console.log(req);
+    res.render("rooms/index.ejs", {rooms, joinedRooms});
 });
 
 // using routes

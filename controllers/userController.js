@@ -8,7 +8,7 @@ module.exports.renderSignup = (req, res, next) => {
 
 module.exports.signup = async (req, res, next) => {
     try{
-        console.log("working")
+        // console.log("working")
         let {username, email, password} = req.body;
 
         let otp = otpGenerator.generateOTP(4);
@@ -16,7 +16,7 @@ module.exports.signup = async (req, res, next) => {
         // register a new user
         let newUser = new User({username, email, otp});
         const registeredUser = await User.register(newUser, password);
-        console.log(username, email, otp);
+        // console.log(username, email, otp);
         // sending email to the email given by the user along with otp
         let name = process.env.EMAIL_USER_NAME;
         let user = process.env.EMAIL_USER;

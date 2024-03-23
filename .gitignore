@@ -1,5 +1,2 @@
 .env
 node_modules/
-assets/
-index.html
-log.html

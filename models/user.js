@@ -25,16 +25,14 @@ const userSchema = new Schema({
         required: true, 
         default: false 
     },
-    // bio: {
-    //     type: String,
-    // },
-    // profile_image: {
-    //     url: {
-    //         type: String,
-    //         default: "https://res.cloudinary.com/dfq5rnahw/image/upload/v1707322333/invito/default-profile-photo_blxuie.avif"
-    //     },
-    //     filename: String
-    // }
+    is_online: {
+        type: Boolean,
+        default: false
+    },
+    socket_id : {
+        type: String,
+        default: ""
+    }
 },{timestamps: true});
 
 userSchema.plugin(passportLocalMongoose);
