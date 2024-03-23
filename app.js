@@ -105,6 +105,29 @@ sd.on("connection", async(socket) => {
     let user = await User.findByIdAndUpdate({ _id: userId }, { is_online: true, socket_id: socket.id });
     socket.broadcast.emit("getOnlineUser", {userId, user});
 
+    socket.on("getConnectedUsers", async (meetingId) => {
+        // console.log(meetingId);
+        let room = await Room.findOne({meetingId: meetingId})
+        let members = await Member.find({roomId: room._id}).populate("memberId");
+        let onlineUsers = members.filter((member) => {
+            return member.memberId.is_online;
+        })
+        onlineUsers = onlineUsers.filter((member) => {
+            // console.log(member)
+            // console.log(member.memberId._id.toString() != userId.toString())
+            return member.memberId._id.toString() != userId.toString();
+        })
+        // console.log(onlineUsers)
+        socket.emit("connectedUser", onlineUsers);
+    });
+
+    socket.on("sdpProcess", (data) => {
+        socket.to(data.to_connid).emit("sdpProcess",{
+            message: data.message,
+            from_connid: socket.id 
+        })
+    })
+
     socket.on('disconnect', async () => {
         let userId = socket.handshake.auth.token;
         await User.findByIdAndUpdate({ _id: userId }, { is_online: false, socket_id: "" });

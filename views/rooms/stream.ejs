@@ -21,30 +21,17 @@
         <div class="call-wrap card" style="z-index: 99">
             <a id='meetingid' href="#" style="color: black;"></a>
             <div class="remote-video-wrap" id="remote-video" style="margin-bottom:0;background-color:rgb(131 131 131); display: flex;flex-wrap: wrap;">
-                <% for(joineduser of onlineUsers){ %>
-                    <% if(joineduser.memberId._id != currUser._id){ %>
-                        <div id="<%= joineduser.memberId._id %>" class="remote-user other div-center-column"> 
-                            <h5 class="div-center"><%= joineduser.memberId.username %></h5>
-                            <div class="div-center">
-                                <video autoplay id="<%= joineduser.memberId._id %>video" ></video>
-                                <audio autoplay id="<%= joineduser.memberId._id %>audio" ></audio>
-                            </div>
-                        </div>
-                    <% } %>
-                <% } %>
+                
                 <div>
                     <div id="localUser" class="userbox remote-user div-center" style="flex-direction: column; height:100%;">
                         <h5 class="div-center"><%= currUser.username %>(You)</h5>
                         <div class="div-center">
-                            <video autoplay id="localStreamcideo"></video>
-                            <audio autoplay id="localStreamaudio" ></audio>
+                            <video autoplay id="localStream"></video>
+                            <!-- <audio autoplay id="localStreamaudio" ></audio> -->
                         </div>
                     </div>
                 </div>
             </div>
-
-           
-         
 
         </div>
     </div>
@@ -53,14 +40,58 @@
     <script src="/js/rooms/client.js"></script>
     
     <script>
+        let rtpAudioSenders = [];
+        let rtpVideoSenders = [];
+        let remoteStream = [];
+        let audioStream = [];
+        let localUserVideo;
+        let users_connection = [];
+        let users_connectionId = [];
+        let audioTrack;
+        let mediaTrack;
+        let videoPlayer = document.getElementById("remote-video");
         let id = "<%= currUser._id %>";
+        let meetingId = window.location.search;
+        meetingId = meetingId.replace('?meetingId=', '');
+        // console.log(meetingId);
+
+        let sdpFunction = (data, to_connid) => {
+            socket.emit("sdpProcess", {
+                message: data,
+                to_connid: to_connid
+            })
+        }
+
         let socket = io("/stream-debate", {auth: { token: id,}});
         // console.log(socket)
-        // socket.on("connect", () => {
-        //     if(socket) {
-        //         console.log(socket)
-        //     }
-        // })
+        socket.on("connect", () => {
+            if(socket.id) {
+                localUserVideo = document.getElementById("localStream");
+                processMedia();
+            }
+        })
+
+        // request for pre connected users
+        socket.emit("getConnectedUsers", meetingId);
+
+        // showing preconnected users
+        socket.on("connectedUser", (onlineUsers) => {
+            let html = "";
+            for(joineduser of onlineUsers){ 
+                if(joineduser.memberId._id.toString() != id.toString()){
+                    html += `
+                    <div id="${joineduser.memberId._id}" class="remote-user other div-center-column"> 
+                        <h5 class="div-center">${joineduser.memberId.username}</h5>
+                        <div class="div-center">
+                            <video autoplay id="video_${joineduser.memberId.socket_id}" ></video>
+                            <audio autoplay id="audio_${joineduser.memberId.socket_id}" ></audio>
+                        </div>
+                    </div>`
+                }
+                createConnection(joineduser.memberId.socket_id)
+            }
+            videoPlayer.insertAdjacentHTML("afterbegin", html);
+        })
 
         socket.on('getOfflineUser', async (data) => {
             // console.log(data)
@@ -68,8 +99,7 @@
         });
 
         socket.on('getOnlineUser', async (data) => {
-            console.log(data)
-            let videoPlayer = document.getElementById("remote-video");
+            // console.log(data)
             let html = `<div id=${data.userId} class="remote-user other div-center-column"> 
                             <h5 class="div-center">${data.user.username}</h5>
                             <div class="div-center">
@@ -80,11 +110,170 @@
             videoPlayer.insertAdjacentHTML("afterbegin", html);
         });
 
-    </script>
-    <script>
+        function updateMediaSenders(track, rtpSenders){
+            for(conn_id of users_connection){
+                var connections = users_connection[conn_id];
+                if(connections && (connections.connectionState == "new" || 
+                connections.connectionState == "connecting" || 
+                connections.connectionState == "connected")){
+                    if(rtpSenders[conn_id] && rtpSenders[conn_id].track){
+                        rtpSenders[conn_id].replaceTrack(track);
+                    }else {
+                        rtpSenders[conn_id] = users_connection[conn_id].addTrack(track);
+                    }
+                }
+            }
+        }
 
-    </script>
+        var iceConfig = {
+            iceServers: [
+                {
+                    urls: "stun:stun.l.google.com:19302"
+                },
+                {
+                    urls: "stun:stun1.l.google.com:19302"
+                },
+                {
+                    urls: "stun:stun2.l.google.com:19302"
+                },
+                {
+                    urls: "stun:stun3.l.google.com:19302"
+                },
+                {
+                    urls: "stun:stun4.l.google.com:19302"
+                }
+            ]
+        }
 
+        async function createOffer(connId){
+            var connection = users_connection[connId];
+            var offer = await connection.createOffer();
+            await connection.setLocalDescription(offer);
+            sdpFunction(JSON.stringify({
+                'offer': connection.localDescription
+            }), connId);
+        }
+
+        socket.on("sdpProcess", async (data) => {
+            await sdpProcess(data.message, data.from_connid) 
+        })
+
+        async function createConnection(connId) {
+
+            let connection = new RTCPeerConnection(iceConfig);
+            connection.onicecandidate = function(event) {
+                if(event.candidate) {
+                    // console.log(event.candidate)
+                    sdpFunction(JSON.stringify({
+                        'iceCandidate': event.candidate
+                    }), connId)
+                }
+            }
+
+            connection.onnegotiationneeded = async function(event) {
+                await createOffer(connId); // pending method
+            }
+
+            connection.ontrack = function(event) {
+                if(!remoteStream[connId]) {
+                    remoteStream[connId] = new MediaStream();
+                }
+                if(!audioStream[connId]) {
+                    audioStream[connId] = new MediaStream();
+                }
+
+                if(event.track.kind == "video") {
+                    remoteStream[connId].getTracks().forEach(t => remoteStream[connId].removeTrack(t));
+                    remoteStream[connId].addTrack(event.track);
+                    let remoteVideoDiv = document.getElementById("video_"+connId);
+                    remoteVideoDiv.srcObject = null;
+                    remoteVideoDiv.srcObject = remoteStream[connId];
+                    remoteVideoDiv.load();
+                }
+                else if(event.track.kind == "audio"){
+                    audioStream[connId].getTracks().forEach(t => audioStream[connId].removeTrack(t));
+                    audioStream[connId].addTrack(event.track);
+                    let remoteAudioDiv = document.getElementById("audio"+connId);
+                    remoteAudioDiv.srcObject = null;
+                    remoteAudioDiv.srcObject = audioStream[connId];
+                    remoteAudioDiv.load();
+                }
+            }
+
+            users_connectionId[connId] = connId;
+            users_connection[connId] = connection;
+            updateMediaSenders(mediaTrack, rtpVideoSenders);
+
+            return connection;
+        }
+
+        
+        // processing media data
+        async function processMedia() {
+            try{
+                var vStream = null;
+                var aStream = null;
+                
+                vStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        height: 480,
+                        width: 720
+                    },
+                    audio: false
+                })
+                // console.log(vStream)
+                // console.log(vStream.getAudioTracks()[0])
+                aStream = await navigator.mediaDevices.getUserMedia({
+                    video: false,
+                    audio: true
+                })
+                // console.log(aStream)
+                // console.log(aStream.getVideoTracks()[0])
+
+                audioTrack = aStream.getAudioTracks()[0];
+                audioTrack.enabled = true;
+                updateMediaSenders(audioTrack, rtpAudioSenders);
+
+                mediaTrack = vStream.getVideoTracks()[0];
+                localUserVideo.srcObject = new MediaStream([mediaTrack]);
+                updateMediaSenders(mediaTrack, rtpVideoSenders);
+
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        async function sdpProcess(message, from_connid) {
+            message = JSON.parse(message);
+            if(message.answer) {
+                await users_connection[from_connid].setRemoteDescription(new RTCSessionDescription(message.answer))
+            }
+            else if(message.offer) {
+                if(!users_connection[from_connid]){
+                    await createConnection(from_connid);
+                }
+                await users_connection[from_connid].setRemoteDescription(new RTCSessionDescription(message.offer));
+                var answer = await users_connection[from_connid].createAnswer();
+                await users_connection[from_connid].setLocalDescription(answer);
+
+                sdpFunction(JSON.stringify({
+                    'answer': answer
+                }), from_connid);
+            }
+            else if(message.iceCandidate) {
+                if(!users_connection[from_connid]){
+                    await createConnection(from_connid);
+                }
+
+                try{
+                    await users_connection[from_connid].addIceCandidate(message.iceCandidate);
+                }catch(error) {
+                    console.log(error);
+                }
+            }
+        }
+       
+    </script>
 </body>
 
 </html>
