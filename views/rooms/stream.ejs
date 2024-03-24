@@ -114,7 +114,7 @@
                         <h5 class="div-center">${joineduser.memberId.username}</h5>
                         <div class="div-center">
                             <video autoplay id="video_${joineduser.memberId.socket_id}" class="peer-video"></video>
-                            <audio autoplay id="audio_${joineduser.memberId.socket_id}" ></audio>
+                            <audio autoplay id="audio_${joineduser.memberId.socket_id}" class="peer-audio></audio>
                         </div>
                     </div>`
                 }
@@ -134,7 +134,7 @@
                             <h5 class="div-center">${data.user.username}</h5>
                             <div class="div-center">
                                 <video autoplay id=${data.userId}video class="peer-video"></video>
-                                <audio autoplay id=${data.userId}audio ></audio>
+                                <audio autoplay id=${data.userId}audio class="peer-audio"></audio>
                             </div>
                         </div>`;
             videoPlayer.insertAdjacentHTML("afterbegin", html);
@@ -159,11 +159,17 @@
             console.log(event.track)
             setTimeout(() => {
                 peerVideo = document.querySelector(".peer-video");
+                peerAudio = document.querySelector(".peer-audio");
                 console.log(peerVideo);
                 if(event.track.kind == "video"){
                     console.log(event.track)
                     console.log(new MediaStream([event.track]))
                     peerVideo.srcObject = new MediaStream([event.track]);
+                }
+                if(event.track.kind == "audio"){
+                    console.log(event.track)
+                    console.log(new MediaStream([event.track]))
+                    peerAudio.srcObject = new MediaStream([event.track]);
                 }
                 
             }, 1500)
