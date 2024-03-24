@@ -32,6 +32,10 @@ const userSchema = new Schema({
     socket_id : {
         type: String,
         default: ""
+    },
+    meetingRoom: {
+        type: String,
+        default: ""
     }
 },{timestamps: true});
 

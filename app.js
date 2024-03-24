@@ -31,7 +31,7 @@ const roomRouter = require("./routes/room");
 const Member = require('./models/member');
 
 async function main() {
-    await mongoose.connect(process.env.ATLAS_URL);
+    await mongoose.connect(process.env.MONGODB_URL);
 }
 
 main()
@@ -53,7 +53,7 @@ app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
 const store = MongoStore.create({
-    mongoUrl: process.env.ATLAS_URL,
+    mongoUrl: process.env.MONGODB_URL,
     crypto: {
         secret: process.env.SECRET
     },
@@ -99,39 +99,83 @@ passport.deserializeUser(User.deserializeUser());
 // }) 
 
 // socket of stream page
-let sd = io.of("/stream-debate");
-sd.on("connection", async(socket) => {
+// let sd = io.of("/stream-debate");
+
+io.on("connection", async(socket) => {
+    let id = socket.id
+    // console.log(id)
     let userId = socket.handshake.auth.token;
-    let user = await User.findByIdAndUpdate({ _id: userId }, { is_online: true, socket_id: socket.id });
-    socket.broadcast.emit("getOnlineUser", {userId, user});
+    let meetingId = socket.handshake.auth.meetingId;
+    let user = await User.findByIdAndUpdate({ _id: userId }, { is_online: true, socket_id: socket.id, meetingRoom:  meetingId});
+    socket.to(meetingId).emit("getOnlineUser", {userId, user});  // correct this method
 
     socket.on("getConnectedUsers", async (meetingId) => {
         // console.log(meetingId);
         let room = await Room.findOne({meetingId: meetingId})
         let members = await Member.find({roomId: room._id}).populate("memberId");
         let onlineUsers = members.filter((member) => {
-            return member.memberId.is_online;
+            return member.memberId.meetingRoom == meetingId;
         })
         onlineUsers = onlineUsers.filter((member) => {
             // console.log(member)
             // console.log(member.memberId._id.toString() != userId.toString())
             return member.memberId._id.toString() != userId.toString();
         })
+
         // console.log(onlineUsers)
         socket.emit("connectedUser", onlineUsers);
     });
 
-    socket.on("sdpProcess", (data) => {
-        socket.to(data.to_connid).emit("sdpProcess",{
-            message: data.message,
-            from_connid: socket.id 
-        })
+    // let rooms = io.sockets.adapter.rooms;
+    socket.on("join", (data) => {
+        let rooms = io.sockets.adapter.rooms;
+        // console.log(rooms)
+        let room = rooms.get(data)
+        // console.log(room)
+        if(room == undefined){
+            socket.join(data)
+        }
+        else if(!room.has(id)){
+            // console.log(true)
+            socket.join(data)
+        }
+        room = rooms.get(data)
+        // console.log(room)
+        // console.log(rooms)
+    })
+
+    // socket.on("sdpProcess", (data) => {
+    //     socket.to(data.to_connid).emit("sdpProcess",{
+    //         message: data.message,
+    //         from_connid: socket.id 
+    //     })
+    // })
+
+    socket.on("ready", (roomName) => {
+        // console.log("ready");
+        socket.broadcast.to(roomName).emit("ready");
+    })
+
+    socket.on("candidate", (candidate, roomName) => {
+        // console.log("candidate");
+        socket.broadcast.to(roomName).emit("candidate", candidate);
+    })
+
+    socket.on("offer", (offer, roomName) => {
+        // console.log("offer");
+        // console.log(offer);
+        socket.broadcast.to(roomName).emit("offer", offer);
+    })
+
+    socket.on("answer", (answer, roomName) => {
+        console.log(answer);
+        socket.broadcast.to(roomName).emit("answer", answer);
     })
 
     socket.on('disconnect', async () => {
         let userId = socket.handshake.auth.token;
-        await User.findByIdAndUpdate({ _id: userId }, { is_online: false, socket_id: "" });
-        socket.broadcast.emit("getOfflineUser", userId);
+        await User.findByIdAndUpdate({ _id: userId }, { is_online: false, socket_id: "", meetingRoom: "" });
+        socket.to(meetingId).emit("getOfflineUser", userId); // correct this method
     });
 }) 
 
