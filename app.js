@@ -31,7 +31,7 @@ const roomRouter = require("./routes/room");
 const Member = require('./models/member');
 
 async function main() {
-    await mongoose.connect(process.env.MONGODB_URL);
+    await mongoose.connect(process.env.ATLAS_URL);
 }
 
 main()
@@ -53,7 +53,7 @@ app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
 const store = MongoStore.create({
-    mongoUrl: process.env.MONGODB_URL,
+    mongoUrl: process.env.ATLAS_URL,
     crypto: {
         secret: process.env.SECRET
     },
