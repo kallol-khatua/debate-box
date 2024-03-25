@@ -55,9 +55,11 @@
         let meetingId = window.location.search;
         meetingId = meetingId.replace('?meetingId=', '');
         let roomName = meetingId;
+        let peerVideo;
+        let peerAudio;
         
 
-        let creator = false;
+        // let creator = false;
         let peerConnection;
 
         var iceConfig = {
@@ -130,13 +132,13 @@
             document.getElementById(data).remove();
         });
 
-        socket.on('getOnlineUser', async (user) => {
+        socket.on('getOnlineUser', async (updatedUser) => {
             
-            let html = `<div id=${user._id} class="remote-user other div-center-column"> 
-                            <h5 class="div-center">${user.username}</h5>
+            let html = `<div id=${updatedUser._id} class="remote-user other div-center-column"> 
+                            <h5 class="div-center">${updatedUser.username}</h5>
                             <div class="div-center">
-                                <video autoplay id=${user.socket_id}video class="peer-video"></video>
-                                <audio autoplay id=${user.socket_id}audio class="peer-audio"></audio>
+                                <video autoplay id="video_${updatedUser.socket_id}" class="peer-video"></video>
+                                <audio autoplay id="audio_${updatedUser.socket_id}" class="peer-audio"></audio>
                             </div>
                         </div>`;
             videoPlayer.insertAdjacentHTML("afterbegin", html);
@@ -149,12 +151,10 @@
                 socket.emit("candidate", event.candidate, roomName, socketId)
             }
         }
-
-        let peerVideo;
-        let peerAudio;
         
         function OnTrackFunction(event) {
             setTimeout(() => {
+                // console.log(socket.id)  
 
                 if(event.track.kind == "video"){
                     peerVideo = document.querySelector(".peer-video");
@@ -176,16 +176,16 @@
         var aStream = null;
                    
         socket.on("ready", async (socketId) => {
-            console.log("ready");
+            // console.log("ready");
             console.log(socketId);
             // creator = true;
             // if(creator){
                 peerConnection = new RTCPeerConnection(iceConfig);
-                console.log(peerConnection)
+                // console.log(peerConnection)
 
                 peerConnection.onicecandidate = (event) => {
                     if(event.candidate) {
-                        console.log(event.candidate)
+                        // console.log(event.candidate)
                         socket.emit("candidate", event.candidate, roomName, socketId)
                     }
                 };
@@ -194,14 +194,38 @@
                 // peerConnection.onicecandidate(peerConnection)
                 // peerConnection.onicecandidate(event)
 
-                peerConnection.ontrack = OnTrackFunction;
+                // peerConnection.ontrack = OnTrackFunction;
+
+                peerConnection.ontrack = (event) => {
+                    // setTimeout(() => {
+                        // console.log(socketId)  
+                        if(event.track.kind == "video"){
+                            // peerVideo = document.querySelector(".peer-video");
+                            peerVideo = document.getElementById(`video_${socketId}`);
+                            console.log(peerVideo)
+                            // peerVideo.srcObject = new MediaStream([event.track]);
+                            peerVideo.srcObject = event.streams[0];
+                        }
+                    
+                        if(event.track.kind == "audio"){
+                            // peerAudio = document.querySelector(".peer-audio");
+                            peerAudio = document.getElementById(`audio_${socketId}`);
+                            console.log(peerAudio);
+                            // peerAudio.srcObject = new MediaStream([event.streams[0]]);
+                            peerAudio.srcObject = event.streams[0];
+                        }
+
+                    // }, 1500)
+
+                };
+
                 peerConnection.addTrack(mediaTrack, vStream);
                 peerConnection.addTrack(audioTrack, aStream);
 
                 peerConnection.createOffer(
                     function(offer) {
                         peerConnection.setLocalDescription(offer);
-                        console.log(peerConnection)
+                        // console.log(peerConnection)
 
                         socket.emit("offer", offer, roomName, socketId);
                     },
@@ -213,13 +237,13 @@
         })
 
         socket.on("candidate", async (candidate) => {
-            console.log("candidate");
+            // console.log("candidate");
             var iceCandidate = new RTCIceCandidate(candidate);
             await peerConnection.addIceCandidate(iceCandidate);
         })
 
         socket.on("offer", (offer, socketId) => {
-            console.log("offer");
+            // console.log("offer");
             // if(!creator){
                 // console.log(offer)
                 peerConnection = new RTCPeerConnection(iceConfig);
@@ -233,7 +257,30 @@
                 // peerConnection.onicecandidate(peerConnection)
                 // peerConnection.onicecandidate(event)
 
-                peerConnection.ontrack = OnTrackFunction;
+                // peerConnection.ontrack = OnTrackFunction;
+
+                peerConnection.ontrack = (event) => {
+                    // setTimeout(() => {
+                        // console.log(socketId)  
+                        if(event.track.kind == "video"){
+                            // peerVideo = document.querySelector(".peer-video");
+                            peerVideo = document.getElementById(`video_${socketId}`);
+                            console.log(peerVideo)
+                            // peerVideo.srcObject = new MediaStream([event.track]);
+                            peerVideo.srcObject = event.streams[0];
+                        }
+                    
+                        if(event.track.kind == "audio"){
+                            peerAudio = document.getElementById(`audio_${socketId}`);
+                            console.log(peerAudio);
+                            // peerAudio = document.querySelector(".peer-audio");
+                            // peerAudio.srcObject = new MediaStream([event.streams[0]]);
+                            peerAudio.srcObject = event.streams[0];
+                        }
+
+                    // }, 1500)
+
+                };
                 peerConnection.addTrack(mediaTrack, vStream);
                 peerConnection.addTrack(audioTrack, aStream);
                 peerConnection.setRemoteDescription(offer);
@@ -250,8 +297,8 @@
         })
 
         socket.on("answer", (answer, socketId) => {
-            console.log("answer");
-            peerConnection.ontrack = OnTrackFunction;
+            // console.log("answer");
+            // peerConnection.ontrack = OnTrackFunction;
             peerConnection.setRemoteDescription(answer);
         })
 

@@ -107,8 +107,12 @@ io.on("connection", async(socket) => {
     // console.log(id)
     let userId = socket.handshake.auth.token;
     let meetingId = socket.handshake.auth.meetingId;
-    let user = await User.findByIdAndUpdate({ _id: userId }, { is_online: true, socket_id: socket.id, meetingRoom:  meetingId});
-    socket.to(meetingId).emit("getOnlineUser", user);  // correct this method
+    let user = await User.findByIdAndUpdate({ _id: userId.toString() }, { is_online: true, socket_id: socket.id, meetingRoom:  meetingId});
+    let updatedUser = await User.findById(userId)
+    // console.log(socketId)
+    // console.log(userId)
+    // console.log(updatedUser)
+    socket.to(meetingId).emit("getOnlineUser", updatedUser);  // correct this method
 
     socket.on("getConnectedUsers", async (meetingId) => {
         // console.log(meetingId);
@@ -155,7 +159,7 @@ io.on("connection", async(socket) => {
     // })
 
     socket.on("ready", (roomName, socketId) => {
-        console.log("ready");
+        // console.log("ready");
         // console.log(roomName)
         // let rooms = io.sockets.adapter.rooms;
         // console.log(rooms)
@@ -173,14 +177,14 @@ io.on("connection", async(socket) => {
     })
 
     socket.on("offer", (offer, roomName, socketId) => {
-        console.log("offer");
+        // console.log("offer");
         // console.log(offer);
         socket.to(socketId).emit("offer", offer, currUserSocketId);
         // socket.broadcast.to(socketId).emit("offer", offer, socketId);
     })
 
     socket.on("answer", (answer, roomName, socketId) => {
-        console.log("answer");
+        // console.log("answer");
         socket.to(socketId).emit("answer", answer, socketId);
         // socket.broadcast.to(socketId).emit("answer", answer, socketId);
     })
