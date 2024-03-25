@@ -10,6 +10,10 @@ body {
     height: 100vh;
 }
 
+#localStream{
+    transform: rotateY(180deg);
+}
+
 video {
     background: black;
     border: 1px solid gray;

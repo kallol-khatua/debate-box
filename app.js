@@ -102,17 +102,20 @@ passport.deserializeUser(User.deserializeUser());
 // let sd = io.of("/stream-debate");
 
 io.on("connection", async(socket) => {
-    let id = socket.id
+    let socketId = socket.id
+    let currUserSocketId = socket.id
     // console.log(id)
     let userId = socket.handshake.auth.token;
     let meetingId = socket.handshake.auth.meetingId;
     let user = await User.findByIdAndUpdate({ _id: userId }, { is_online: true, socket_id: socket.id, meetingRoom:  meetingId});
-    socket.to(meetingId).emit("getOnlineUser", {userId, user});  // correct this method
+    socket.to(meetingId).emit("getOnlineUser", user);  // correct this method
 
     socket.on("getConnectedUsers", async (meetingId) => {
         // console.log(meetingId);
-        let room = await Room.findOne({meetingId: meetingId})
-        let members = await Member.find({roomId: room._id}).populate("memberId");
+        let meetingRoom = await Room.findOne({meetingId: meetingId}).populate("host")
+        let host = await User.findOne({_id: meetingRoom.host});
+        // console.log(host);
+        let members = await Member.find({roomId: meetingRoom._id}).populate("memberId");
         let onlineUsers = members.filter((member) => {
             return member.memberId.meetingRoom == meetingId;
         })
@@ -123,7 +126,7 @@ io.on("connection", async(socket) => {
         })
 
         // console.log(onlineUsers)
-        socket.emit("connectedUser", onlineUsers);
+        socket.emit("connectedUser", onlineUsers, host);
     });
 
     // let rooms = io.sockets.adapter.rooms;
@@ -135,7 +138,7 @@ io.on("connection", async(socket) => {
         if(room == undefined){
             socket.join(data)
         }
-        else if(!room.has(id)){
+        else if(!room.has(socketId)){
             // console.log(true)
             socket.join(data)
         }
@@ -151,25 +154,35 @@ io.on("connection", async(socket) => {
     //     })
     // })
 
-    socket.on("ready", (roomName) => {
-        // console.log("ready");
-        socket.broadcast.to(roomName).emit("ready");
+    socket.on("ready", (roomName, socketId) => {
+        console.log("ready");
+        // console.log(roomName)
+        // let rooms = io.sockets.adapter.rooms;
+        // console.log(rooms)
+        // let room = rooms.get(roomName)
+        // console.log(room)
+        // console.log(socketId)
+        socket.broadcast.to(roomName).emit("ready", socketId);
     })
 
-    socket.on("candidate", (candidate, roomName) => {
-        // console.log("candidate");
-        socket.broadcast.to(roomName).emit("candidate", candidate);
+    socket.on("candidate", (candidate, roomName, socketId) => {
+        // console.log("candidate", socketId);
+        // console.log(candidate)
+        socket.to(socketId).emit("candidate", candidate);
+        // socket.broadcast.to(socketId).emit("candidate", candidate);
     })
 
-    socket.on("offer", (offer, roomName) => {
-        // console.log("offer");
+    socket.on("offer", (offer, roomName, socketId) => {
+        console.log("offer");
         // console.log(offer);
-        socket.broadcast.to(roomName).emit("offer", offer);
+        socket.to(socketId).emit("offer", offer, currUserSocketId);
+        // socket.broadcast.to(socketId).emit("offer", offer, socketId);
     })
 
-    socket.on("answer", (answer, roomName) => {
-        // console.log(answer);
-        socket.broadcast.to(roomName).emit("answer", answer);
+    socket.on("answer", (answer, roomName, socketId) => {
+        console.log("answer");
+        socket.to(socketId).emit("answer", answer, socketId);
+        // socket.broadcast.to(socketId).emit("answer", answer, socketId);
     })
 
     socket.on('disconnect', async () => {
