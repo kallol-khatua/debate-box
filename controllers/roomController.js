@@ -42,7 +42,7 @@ module.exports.meeting = async (req, res, next) => {
         let room = await Room.findOne({meetingId: req.query.meetingId})
         let members = await Member.find({roomId: room._id}).populate("memberId");
         let onlineUsers = members.filter((member) => {
-            return member.memberId.is_online;
+            return member.memberId.meetingRoom == req.query.meetingId;
         })
         onlineUsers = onlineUsers.filter((member) => {
             // console.log(member.memberId._id.toString() != req.user._id.toString())

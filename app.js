@@ -139,7 +139,7 @@ io.on("connection", async(socket) => {
             // console.log(true)
             socket.join(data)
         }
-        room = rooms.get(data)
+        // room = rooms.get(data)
         // console.log(room)
         // console.log(rooms)
     })
@@ -168,7 +168,7 @@ io.on("connection", async(socket) => {
     })
 
     socket.on("answer", (answer, roomName) => {
-        console.log(answer);
+        // console.log(answer);
         socket.broadcast.to(roomName).emit("answer", answer);
     })
 
