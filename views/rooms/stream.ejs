@@ -92,11 +92,13 @@
             if(muteFlag){ // when mute
                 audioTrack.enabled = false;
                 muteBtn.innerText = "Unmute";
+                muteBtn.style.backgroundColor = "rgba(103, 94, 94, 0.87)";
                 // console.log(audioTrack)
             } else { // when unmute
                 audioTrack.enabled = true;
                 muteBtn.innerText = "Mute";
                 // console.log(audioTrack)
+                muteBtn.style.backgroundColor = "white";
             }
         })
 
@@ -105,9 +107,11 @@
             if(hideCamFlag){ // when camera is off
                 mediaTrack.enabled = false;
                 hideCamBtn.innerText = "Show camera";
+                hideCamBtn.style.backgroundColor = "rgba(103, 94, 94, 0.87)";
             } else { // when camera is on
                 mediaTrack.enabled = true;
                 hideCamBtn.innerText = "Hide camera";
+                hideCamBtn.style.backgroundColor = "white";
             }
         })
 
