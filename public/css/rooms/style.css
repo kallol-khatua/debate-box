@@ -10,10 +10,6 @@ body {
     height: 100vh;
 }
 -----------------------------------------------------------------------------------------------
-#localStream{
-    transform: rotateY(180deg);
-}
-
 .btn-group button {
     background-color: white; /* Green background */
     border: 1px solid green; /* Green border */
@@ -37,6 +33,10 @@ body {
   /* Add a background color on hover */
 .btn-group button:hover {
     background-color: rgba(103, 94, 94, 0.87);
+}
+
+#localStream{
+    transform: rotateY(180deg);
 }
  _________________________________________________________________________
 video {
