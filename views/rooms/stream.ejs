@@ -32,6 +32,11 @@
                     </div>
                 </div>
             </div>
+            <div class="btn-group">
+                <button id="mute-btn">Mute</button>
+                <button id="hide-camera-btn">Hide camera</button>
+                <a href="/"><button>Leave room</button></a>
+              </div>  
 
         </div>
     </div>
@@ -54,6 +59,10 @@
         let peerConnection;
         var vStream = null;
         var aStream = null;
+        let muteBtn = document.getElementById("mute-btn")
+        let muteFlag = false;
+        let hideCamBtn = document.getElementById("hide-camera-btn")
+        let hideCamFlag = false;
 
         var iceConfig = {
             iceServers: [
@@ -78,6 +87,29 @@
             ]
         }
 
+        muteBtn.addEventListener("click", () => {
+            muteFlag = !muteFlag;
+            if(muteFlag){ // when mute
+                audioTrack.enabled = false;
+                muteBtn.innerText = "Unmute";
+                // console.log(audioTrack)
+            } else { // when unmute
+                audioTrack.enabled = true;
+                muteBtn.innerText = "Mute";
+                // console.log(audioTrack)
+            }
+        })
+
+        hideCamBtn.addEventListener("click", () => {
+            hideCamFlag = !hideCamFlag;
+            if(hideCamFlag){ // when camera is off
+                mediaTrack.enabled = false;
+                hideCamBtn.innerText = "Show camera";
+            } else { // when camera is on
+                mediaTrack.enabled = true;
+                hideCamBtn.innerText = "Hide camera";
+            }
+        })
 
         let socket = io({auth: { token: id, meetingId: meetingId}});
         
@@ -208,12 +240,13 @@
                         if(event.track.kind == "video"){
                             
                             peerVideo = document.getElementById(`video_${socketId}`);
-                            
+                            // console.dir(peerVideo)
                             peerVideo.srcObject = event.streams[0];
                         }
                     
                         if(event.track.kind == "audio"){
                             peerAudio = document.getElementById(`audio_${socketId}`);
+                            // console.dir(peerAudio)
                             peerAudio.srcObject = event.streams[0];
                         }
                 };
@@ -260,7 +293,10 @@
                 localUserVideo.srcObject = new MediaStream([mediaTrack]);
                 
                 // ready to send media to other users in the room 
-                socket.emit("ready", roomName, socketId);
+                setTimeout(() => {
+                    socket.emit("ready", roomName, socketId);
+                }, 1000);
+                
 
             } catch (error) {
                 console.log(error);
