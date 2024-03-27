@@ -18,8 +18,9 @@
     <h4><%= currUser.username %></h4>
     <!-- <h4 style="color: white;"><%= currUser.username %></h4> -->
     <a href="/users/logout">Logout</a>
-    <p>hosted rooms</p>
+    <p>rooms</p>
     <ul>
+      
       <% rooms.forEach(room => { %>
       <li>
         <a href="/rooms/meeting?meetingId=<%= room.meetingId %>"
@@ -28,16 +29,7 @@
       </li>
       <% }); %>
     </ul>
-    <p>joined rooms</p>
-    <ul>
-      <% joinedRooms.forEach(room => { %>
-      <li>
-        <a href="/rooms/meeting?meetingId=<%= room.roomId.meetingId %>"
-          ><%= room.roomId.meetingId %></a
-        >
-      </li>
-      <% }); %>
-    </ul>
+    
     <div class="main-wrap">
       <div class="call-wrap card" style="z-index: 99">
         <div

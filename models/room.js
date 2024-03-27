@@ -13,6 +13,10 @@ const roomSchema = new Schema({
         type: String,
         required: true
     },
+    isOver: {
+        type: Boolean,
+        default: false
+    }
 },{timestamps: true});
 
 const Room = mongoose.model('Room', roomSchema);

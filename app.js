@@ -102,51 +102,54 @@ passport.deserializeUser(User.deserializeUser());
 // let sd = io.of("/stream-debate");
 
 io.on("connection", async(socket) => {
-    let socketId = socket.id
-    let currUserSocketId = socket.id
-    // console.log(id)
+    // let socketId = socket.id
+    let currUserSocketId = socket.id;
     let userId = socket.handshake.auth.token;
     let meetingId = socket.handshake.auth.meetingId;
-    let user = await User.findByIdAndUpdate({ _id: userId.toString() }, { is_online: true, socket_id: socket.id, meetingRoom:  meetingId});
-    let updatedUser = await User.findById(userId)
+    await User.findByIdAndUpdate({ _id: userId.toString() }, { is_online: true, socket_id: socket.id, meetingRoom:  meetingId});
     // console.log(socketId)
     // console.log(userId)
-    // console.log(updatedUser)
-    socket.to(meetingId).emit("getOnlineUser", updatedUser);  // correct this method
+    
+    socket.on("getOnlineUser", async(userId) => {
+        let updatedUser = await User.findById(userId)
+        // console.log(updatedUser)
+        socket.emit("getOnlineUser", updatedUser);  // correct this method
+        socket.to(meetingId).emit("getOnlineUser", updatedUser);  // correct this method
+    })
+    
 
-    socket.on("getConnectedUsers", async (meetingId) => {
-        // console.log(meetingId);
-        let meetingRoom = await Room.findOne({meetingId: meetingId}).populate("host")
-        let host = await User.findOne({_id: meetingRoom.host});
+    socket.on("getConnectedUsers", async (roomName) => {
+        // console.log(roomName);
+        let meetingRoom = await Room.findOne({meetingId: roomName}).populate("host")
+        let host = meetingRoom.host;
         // console.log(host);
-        let members = await Member.find({roomId: meetingRoom._id}).populate("memberId");
-        let onlineUsers = members.filter((member) => {
-            return member.memberId.meetingRoom == meetingId;
+        let connectedUSer = await User.find({meetingRoom: roomName});
+        connectedUSer = connectedUSer.filter((user) => {
+            return user._id.toString() != userId.toString();
         })
-        onlineUsers = onlineUsers.filter((member) => {
-            // console.log(member)
-            // console.log(member.memberId._id.toString() != userId.toString())
-            return member.memberId._id.toString() != userId.toString();
+        connectedUSer = connectedUSer.filter((user) => {
+            return user._id.toString() != host._id.toString();
         })
-
-        // console.log(onlineUsers)
-        socket.emit("connectedUser", onlineUsers, host);
+        
+        socket.emit("connectedUser", connectedUSer, host);
     });
 
     // let rooms = io.sockets.adapter.rooms;
-    socket.on("join", (data) => {
+    socket.on("join", (roomName) => {
+        // console.log("join");
         let rooms = io.sockets.adapter.rooms;
         // console.log(rooms)
-        let room = rooms.get(data)
+        let room = rooms.get(roomName);
         // console.log(room)
         if(room == undefined){
-            socket.join(data)
+            socket.join(roomName);
         }
-        else if(!room.has(socketId)){
+        else if(!room.has(currUserSocketId)){
             // console.log(true)
-            socket.join(data)
+            socket.join(roomName);
         }
-        // room = rooms.get(data)
+        socket.emit("join");
+        // room = rooms.get(roomName)
         // console.log(room)
         // console.log(rooms)
     })
@@ -169,23 +172,23 @@ io.on("connection", async(socket) => {
         socket.broadcast.to(roomName).emit("ready", socketId);
     })
 
-    socket.on("candidate", (candidate, roomName, socketId) => {
+    socket.on("candidate", (candidate, socketId) => {
         // console.log("candidate", socketId);
         // console.log(candidate)
         socket.to(socketId).emit("candidate", candidate);
         // socket.broadcast.to(socketId).emit("candidate", candidate);
     })
 
-    socket.on("offer", (offer, roomName, socketId) => {
+    socket.on("offer", (offer, socketId) => {
         // console.log("offer");
         // console.log(offer);
         socket.to(socketId).emit("offer", offer, currUserSocketId);
         // socket.broadcast.to(socketId).emit("offer", offer, socketId);
     })
 
-    socket.on("answer", (answer, roomName, socketId) => {
+    socket.on("answer", (answer, socketId) => {
         // console.log("answer");
-        socket.to(socketId).emit("answer", answer, socketId);
+        socket.to(socketId).emit("answer", answer);
         // socket.broadcast.to(socketId).emit("answer", answer, socketId);
     })
 
@@ -205,11 +208,11 @@ app.use((req, res, next) => {
 });
 
 app.get("/", isLoggedIn, isVerified, async(req, res, next) => {
-    let rooms = await Room.find({host: req.user._id});
-    let joinedRooms = await Member.find({memberId: req.user._id}).populate("roomId");
-    // console.log(joinedRooms);
+    let rooms = await Room.find({isOver: false});
+    rooms = rooms.reverse()
+    // console.log(rooms);
     // console.log(req);
-    res.render("rooms/index.ejs", {rooms, joinedRooms});
+    res.render("rooms/index.ejs", {rooms});
 });
 
 // using routes

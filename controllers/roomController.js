@@ -16,10 +16,7 @@ module.exports.joinMeeting = async (req, res, next) => {
     }
 
     // if host of the room then not allow to join again
-    // console.log(room.host)
-    // console.log(req.user._id)
-    // console.log(req.user.id)
-    // console.log(req.user._id.toString() == room.host.toString())
+    
     if (req.user._id.toString() == room.host.toString()) {
         return res.send({ success: false, message: "you are the host" , code: 1});
     }
@@ -51,7 +48,7 @@ module.exports.meeting = async (req, res, next) => {
         // console.log(room, members, onlineUsers)
         
         // console.log(onlineUsers, req.user)
-        return res.render("rooms/stream.ejs", {onlineUsers});
+        return res.render("rooms/roomDashboard.ejs", {onlineUsers});
     } else {
         return res.redirect("/");
     }

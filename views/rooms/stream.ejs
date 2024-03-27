@@ -232,7 +232,7 @@
             
                 peerConnection = new RTCPeerConnection(iceConfig);
                 
-                peerConnection.onicecandidate = peerConnection.onicecandidate = (event) => {
+                peerConnection.onicecandidate = (event) => {
                     if(event.candidate) {
                 
                         socket.emit("candidate", event.candidate, roomName, socketId)
