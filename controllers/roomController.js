@@ -1,55 +1,32 @@
 const otpGenerator = require('generate-otp-by-size');
 const Room = require('../models/room');
-const Member = require('../models/member');
 const Chat = require('../models/chat');
 
 module.exports.hostMeeting = async (req, res, next) => {
     let meetingId = await otpGenerator.generateOTP(8);
-    let newRoom = new Room({ host: req.user, meetingId: meetingId });
+    let hostedMeeting = await Room.findOne({host: req.user, isOver: false});
+    // console.log(hostedMeeting)
+    if(hostedMeeting) {
+        return res.redirect("/");
+    }
+    // console.log(req.body)
+    // console.log(req.body.title)
+    let newRoom = new Room({ 
+        host: req.user, 
+        meetingId: meetingId,
+        title: req.body.title,
+        description: req.body.description
+     });
     await newRoom.save();
-    res.send({ success: true, meetingId: `${meetingId}` });
-};
-
-module.exports.joinMeeting = async (req, res, next) => {
-    let room = await Room.findOne({ meetingId: req.query.meetingId });
-    if (!room) {
-        return res.send({ success: false, message: "room not found" });
-    }
-
-    // if host of the room then not allow to join again
-
-    if (req.user._id.toString() == room.host.toString()) {
-        return res.send({ success: false, message: "you are the host", code: 1 });
-    }
-
-    // if already in the room then not allow to rejoin the room
-    let member = await Member.findOne({ memberId: req.user._id, roomId: room._id })
-    // console.log(member);
-    if (member) {
-        return res.send({ success: false, message: "you already joind the room" });
-    }
-
-    let newMember = new Member({ memberId: req.user, roomId: room });
-    await newMember.save();
-    res.send({ success: true, meetingId: room.meetingId });
+    // res.send({ success: true, meetingId: `${meetingId}` });
+    res.redirect(`/rooms/meeting?meetingId=${meetingId}`);
 };
 
 module.exports.meeting = async (req, res, next) => {
-    // console.log(req.user)
+    console.log(req.user)
     if (req.query.meetingId && req.query.meetingId > 0) {
-        let room = await Room.findOne({ meetingId: req.query.meetingId })
-        let members = await Member.find({ roomId: room._id }).populate("memberId");
-        let onlineUsers = members.filter((member) => {
-            return member.memberId.meetingRoom == req.query.meetingId;
-        })
-        onlineUsers = onlineUsers.filter((member) => {
-            // console.log(member.memberId._id.toString() != req.user._id.toString())
-            return member.memberId._id.toString() != req.user._id.toString();
-        })
-        // console.log(room, members, onlineUsers)
-
-        // console.log(onlineUsers, req.user)
-        return res.render("rooms/roomDashboard.ejs", { onlineUsers });
+      
+        return res.render("rooms/roomDashboard.ejs");
     } else {
         return res.redirect("/");
     }

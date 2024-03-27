@@ -222,12 +222,15 @@ app.use((req, res, next) => {
     next();
 });
 
+// http://localhost:8080/rooms/meeting?meetingId=91422581
+
 app.get("/", isLoggedIn, isVerified, async (req, res, next) => {
-    let rooms = await Room.find({ isOver: false });
+    let rooms = await Room.find({ isOver: false }).populate("host");
     rooms = rooms.reverse()
     // console.log(rooms);
     // console.log(req);
-    res.render("rooms/index.ejs", { rooms });
+    // res.render("rooms/index.ejs", { rooms });
+    res.render("home.ejs", { rooms });
 });
 
 // using routes

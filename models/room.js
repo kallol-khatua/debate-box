@@ -6,8 +6,13 @@ const roomSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "User"
     },
-    name: {
-        type: String
+    title: {
+        type: String,
+        default: ""
+    },
+    description: {
+        type: String,
+        default: ""
     },
     meetingId: {
         type: String,
