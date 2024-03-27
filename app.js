@@ -22,13 +22,15 @@ const io = socketIO(server)
 // models
 const User = require('./models/user');
 const Room = require('./models/room');
+const Chat = require('./models/chat');
+
 
 const { isLoggedIn, isVerified } = require('./utils/middlewares');
 
 // routes
 const userRouter = require("./routes/user");
 const roomRouter = require("./routes/room");
-const Member = require('./models/member');
+
 
 async function main() {
     await mongoose.connect(process.env.ATLAS_URL);
@@ -101,36 +103,49 @@ passport.deserializeUser(User.deserializeUser());
 // socket of stream page
 // let sd = io.of("/stream-debate");
 
-io.on("connection", async(socket) => {
+io.on("connection", async (socket) => {
     // let socketId = socket.id
     let currUserSocketId = socket.id;
     let userId = socket.handshake.auth.token;
     let meetingId = socket.handshake.auth.meetingId;
-    await User.findByIdAndUpdate({ _id: userId.toString() }, { is_online: true, socket_id: socket.id, meetingRoom:  meetingId});
+    await User.findByIdAndUpdate({ _id: userId.toString() }, { is_online: true, socket_id: socket.id, meetingRoom: meetingId });
     // console.log(socketId)
     // console.log(userId)
-    
-    socket.on("getOnlineUser", async(userId) => {
+
+//  ------------------------------------- chats -------------------------------------
+
+    socket.on("getOldChats", async (roomName) => {
+        let chats = await Chat.find({roomName: roomName});
+        socket.emit("getOldChats", chats);
+    })
+
+    socket.on("loadCurrentChat", (roomName, chat) => {
+        socket.broadcast.to(roomName).emit("loadCurrentChat",chat);
+    })
+
+//  ------------------------------------- chats -------------------------------------    
+
+    socket.on("getOnlineUser", async (userId) => {
         let updatedUser = await User.findById(userId)
         // console.log(updatedUser)
         socket.emit("getOnlineUser", updatedUser);  // correct this method
         socket.to(meetingId).emit("getOnlineUser", updatedUser);  // correct this method
     })
-    
+
 
     socket.on("getConnectedUsers", async (roomName) => {
         // console.log(roomName);
-        let meetingRoom = await Room.findOne({meetingId: roomName}).populate("host")
+        let meetingRoom = await Room.findOne({ meetingId: roomName }).populate("host")
         let host = meetingRoom.host;
         // console.log(host);
-        let connectedUSer = await User.find({meetingRoom: roomName});
+        let connectedUSer = await User.find({ meetingRoom: roomName });
         connectedUSer = connectedUSer.filter((user) => {
             return user._id.toString() != userId.toString();
         })
         connectedUSer = connectedUSer.filter((user) => {
             return user._id.toString() != host._id.toString();
         })
-        
+
         socket.emit("connectedUser", connectedUSer, host);
     });
 
@@ -141,10 +156,10 @@ io.on("connection", async(socket) => {
         // console.log(rooms)
         let room = rooms.get(roomName);
         // console.log(room)
-        if(room == undefined){
+        if (room == undefined) {
             socket.join(roomName);
         }
-        else if(!room.has(currUserSocketId)){
+        else if (!room.has(currUserSocketId)) {
             // console.log(true)
             socket.join(roomName);
         }
@@ -197,7 +212,7 @@ io.on("connection", async(socket) => {
         await User.findByIdAndUpdate({ _id: userId }, { is_online: false, socket_id: "", meetingRoom: "" });
         socket.to(meetingId).emit("getOfflineUser", userId); // correct this method
     });
-}) 
+})
 
 app.use((req, res, next) => {
     res.cookie('user', JSON.stringify(req.user));
@@ -207,12 +222,12 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get("/", isLoggedIn, isVerified, async(req, res, next) => {
-    let rooms = await Room.find({isOver: false});
+app.get("/", isLoggedIn, isVerified, async (req, res, next) => {
+    let rooms = await Room.find({ isOver: false });
     rooms = rooms.reverse()
     // console.log(rooms);
     // console.log(req);
-    res.render("rooms/index.ejs", {rooms});
+    res.render("rooms/index.ejs", { rooms });
 });
 
 // using routes

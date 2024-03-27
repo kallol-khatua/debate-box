@@ -216,6 +216,140 @@ socket.on("connectedUser", (connectedUSer, host) => {
 
 })
 
+//  ------------------------------------- chats -------------------------------------
+
+socket.emit("getOldChats", roomName);
+let chatArea = document.getElementById("chat-area");
+socket.on("getOldChats", (chats) => {
+
+    let html = "";
+    chats.forEach(chat => {
+        // console.log(chat)
+        if (chat.sender == userId.toString()) {
+            html += `
+            <div class="message-wrapper reverse">
+            
+            <div class="message-content">
+              
+              <div class="message">${chat.message}</div>
+            </div>
+            </div>
+            `
+        }
+        else {
+            html += `
+                <div class="message-wrapper">
+
+                <div class="message-content">
+
+                  <div class="message">${chat.message}</div>
+                </div>
+                </div>
+                `
+        }
+
+    });
+    chatArea.insertAdjacentHTML("afterbegin", html);
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+})
+function showChatArea() {
+    observerNewChat.observe(document.getElementById("chat-area"));
+    
+}
+const observerNewChat = new window.IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) {
+        // Send a message to the server that the user has viewed the message.
+        // console.log("observing")
+        chatArea.scrollTop = chatArea.scrollHeight;
+        return;
+    }
+}, {
+    root: null,
+    threshold: 0.1,
+});
+
+
+socket.on("loadCurrentChat", (chat) => {
+    // console.log(chat);
+    if(chat.roomName == roomName){
+        html = `
+                <div class="message-wrapper">
+
+                <div class="message-content">
+
+                  <div class="message">${chat.message}</div>
+                </div>
+                </div>
+                `
+    chatArea.insertAdjacentHTML("beforeend", html);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    }
+   
+})
+
+let messageField = document.getElementById("message-field");
+messageField.addEventListener("keypress", (event) => {
+    if (event.key == "Enter") {
+        sendChat();
+    }
+});
+
+function sendChat() {
+    let message = messageField.value.trim();
+    if (message == "") {
+        messageField.value = "";
+        return;
+    }
+    messageField.value = ""
+    // console.log(message)
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/rooms/chats/saveChat", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    let chatData = {
+        roomName: roomName,
+        sender: userId,
+        message: message,
+    };
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    html = `
+                    <div class="message-wrapper reverse">
+        
+                    <div class="message-content">
+
+                      <div class="message">${response.data.message}</div>
+                    </div>
+                    </div>
+                    `;
+                    chatArea.insertAdjacentHTML("beforeend", html);
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                    socket.emit("loadCurrentChat", roomName, response.data)
+
+                } else {
+                    console.log(response);
+                }
+            } else {
+                alert("Error occurred while making the request");
+            }
+        }
+    };
+    // Send the request with the data
+    let jsonData = JSON.stringify(chatData);
+    xhr.send(jsonData);
+
+}
+
+
+
+//  ------------------------------------- chats -------------------------------------
+
 socket.on('getOnlineUser', async (updatedUser) => {
     // console.log(updatedUser);
     if (updatedUser._id.toString() != userId.toString()) {
