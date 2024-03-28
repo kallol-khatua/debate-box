@@ -77,7 +77,7 @@ module.exports.renderSignin = (req, res, next) => {
 module.exports.signin = (req, res, next) => {
     res.cookie('user', JSON.stringify(req.user));
     req.flash("success", "Login successfull");
-    res.redirect("/");
+    res.redirect("/main");
 };
 
 module.exports.logout = (req, res, next) => {
@@ -88,10 +88,10 @@ module.exports.logout = (req, res, next) => {
                     return next(err);
                 }
                 req.flash("success", "You logged out successfully");
-                return res.redirect("/users/signin");
+                return res.redirect("/");
             });
         } else {
-            return res.redirect("/users/signin");
+            return res.redirect("/");
         }
     }catch(err) {
         return next(err);
@@ -111,7 +111,7 @@ module.exports.verifyOtp = async (req, res) => {
 
     // when user already verified return to the main page
     if(user.isVerified) {
-        return res.redirect("/");
+        return res.redirect("/main");
     }
 
     // if correct otp entered then update isVerified = true
@@ -122,5 +122,5 @@ module.exports.verifyOtp = async (req, res) => {
         return res.redirect("/users/otpVerification");
     }
 
-    res.redirect("/");
+    res.redirect("/main");
 };

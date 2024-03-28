@@ -224,7 +224,11 @@ app.use((req, res, next) => {
 
 // http://localhost:8080/rooms/meeting?meetingId=91422581
 
-app.get("/", isLoggedIn, isVerified, async (req, res, next) => {
+app.get("/", async (req, res, next) => {
+    res.render("chase.ejs");
+});
+
+app.get("/main", isLoggedIn, isVerified, async (req, res, next) => {
     let rooms = await Room.find({ isOver: false }).populate("host");
     rooms = rooms.reverse()
     // console.log(rooms);
