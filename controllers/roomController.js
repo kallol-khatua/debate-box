@@ -1,6 +1,7 @@
 const otpGenerator = require('generate-otp-by-size');
 const Room = require('../models/room');
 const Chat = require('../models/chat');
+const Member = require('../models/member');
 
 module.exports.hostMeeting = async (req, res, next) => {
     let meetingId = await otpGenerator.generateOTP(8);
@@ -26,6 +27,25 @@ module.exports.meeting = async (req, res, next) => {
     // console.log(req.user)
     if (req.query.meetingId && req.query.meetingId > 0) {
         let room = await Room.findOne({meetingId: req.query.meetingId});
+        
+        if(room.host.toString() == req.user._id.toString()){
+            return res.render("rooms/roomDashboard.ejs", {room});
+        }
+        let member = await Member.findOne({memberId: req.user._id, roomId: room._id});
+
+        if(member){
+            member.last_joined = Date.now();
+            await member.save();
+        }else{
+            let newMember = new Member({
+                roomId: room._id,
+                host: room.host,
+                memberId: req.user._id,
+                meetingId: room.meetingId,
+                last_joined: Date.now()
+            });
+            await newMember.save();
+        }
         return res.render("rooms/roomDashboard.ejs", {room});
     } else {
         return res.redirect("/");

@@ -7,13 +7,23 @@ const memberSchema = new Schema({
         ref: "Room",
         required: true
     },
+    host: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
     memberId: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
+    last_joined: {
+        type: Date,
+        required: true
+    },
     meetingId: {
         type: String,
+        required: true
     },
 },{timestamps: true});
 

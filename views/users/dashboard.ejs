@@ -270,9 +270,9 @@ button + button {
 
 	<!-- SIDEBAR -->
 	<section id="sidebar">
-		<a href="#" class="brand">
+		<a href="/main" class="brand">
 			<i class='bx bxs-smile'></i>
-			<span class="text"><%= user.username %></span>
+			<span class="text">DebateBox</span>
 		</a>
 		<ul class="side-menu top">
 			<li>
@@ -338,7 +338,9 @@ button + button {
 			<input type="checkbox" id="switch-mode" hidden>
 			<label for="switch-mode" class="switch-mode"></label>
 
-			
+			<a href="./<%= currUser._id %>" class="profile">
+				<img src="<%= currUser.profile_image.url %>">
+			</a>
 		</nav>
 		<!-- NAVBAR -->
 
@@ -390,57 +392,42 @@ button + button {
 						<h3>Joined debates</h3>
 						
 					</div>
-					<table>
-						<thead>
-							<tr>
-								<th>User</th>
-								<th>Date Order</th>
-								<th>Status</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>
-									<img src="img/people.png">
-									<p>John Doe</p>
-								</td>
-								<td>01-10-2021</td>
-								<td><span class="status completed">Completed</span></td>
-							</tr>
-							<tr>
-								<td>
-									<img src="img/people.png">
-									<p>John Doe</p>
-								</td>
-								<td>01-10-2021</td>
-								<td><span class="status pending">Pending</span></td>
-							</tr>
-							<tr>
-								<td>
-									<img src="img/people.png">
-									<p>John Doe</p>
-								</td>
-								<td>01-10-2021</td>
-								<td><span class="status process">Process</span></td>
-							</tr>
-							<tr>
-								<td>
-									<img src="img/people.png">
-									<p>John Doe</p>
-								</td>
-								<td>01-10-2021</td>
-								<td><span class="status pending">Pending</span></td>
-							</tr>
-							<tr>
-								<td>
-									<img src="img/people.png">
-									<p>John Doe</p>
-								</td>
-								<td>01-10-2021</td>
-								<td><span class="status completed">Completed</span></td>
-							</tr>
-						</tbody>
-					</table>
+                   <% if(joinedMeet && joinedMeet.length > 0){ %>
+                        <table>
+					    	<thead>
+					    		<tr>
+					    			<th>Host</th>
+					    			<th>Last Joined</th>
+					    			<th>Debate Status</th>
+					    		</tr>
+					    	</thead>
+					    	<tbody>
+                                <% for(meet of joinedMeet){ %>
+                                    <tr>
+                                        
+                                        <td>
+                                            <a href="./<%= meet.host._id %>">
+                                            <img src="<%= meet.host.profile_image.url %>">
+                                            <p><%= meet.host.username %></p>
+                                        </a>
+                                        </td>
+                                        
+                                        <td><%= meet.last_joined.toDateString() %></td>
+                                        <% if(meet.roomId.isOver){ %>
+                                            <td><span class="status completed">Over</span></td>
+                                        <% }else { %>
+                                            <td><span class="status pending">Ongoing</span></td>
+                                        <% } %>
+                                        
+                                    </tr>
+                                <% } %>
+					    		
+					    	</tbody>
+					    </table>
+                    <% } else { %>
+                        <small>Not joined yet</small>
+                    <% } %>
+					
 				</div>
 
 
