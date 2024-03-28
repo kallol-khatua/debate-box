@@ -1,6 +1,8 @@
 const User = require("../models/user");
 const otpGenerator = require('generate-otp-by-size');
 const mailSender = require("../utils/mail");
+const Room = require("../models/room");
+const cloudinary = require('cloudinary').v2;
 
 module.exports.renderSignup = (req, res, next) => {
     res.render("users/signup.ejs");
@@ -124,3 +126,39 @@ module.exports.verifyOtp = async (req, res) => {
 
     res.redirect("/main");
 };
+
+module.exports.showProfile = async (req, res) => {
+    let user = await User.findById(req.params.id);
+    let ongoingMeet = await Room.findOne({host: req.params.id, isOver: false});
+    let completedMeet = await Room.find({host: req.params.id, isOver: true});
+    return res.render("users/dashboard.ejs", {user, ongoingMeet, completedMeet});
+};
+
+module.exports.updateProfile = async(req, res, next) => {
+    let user = req.user;
+    if(user.profile_image.filename  && req.file) {
+        await cloudinary.uploader.destroy(user.profile_image.filename);
+    }
+    if(req.file) {
+        user.profile_image.filename = req.file.filename;
+        user.profile_image.url = req.file.path;
+        await user.save();
+    }
+    res.redirect(`./profile/${user._id}`);
+}
+
+module.exports.editinfo = async(req, res, next) => {
+    try {
+        let {username, bio} = req.body;
+        await User.findOneAndUpdate({_id: req.user._id}, {username: username, bio: bio});
+        let user = await User.findById(req.user._id);
+        req.login(user, (err) => {
+            if(err) {
+                return next(err);
+            }
+            return res.redirect(`./profile/${user._id}`);
+        })
+    } catch(err) {
+        return next(err);
+    }
+}

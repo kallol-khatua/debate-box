@@ -233,9 +233,9 @@
                     data-bs-toggle="modal" data-bs-target="#myModal">Create</label>
                     <!-- exampleModal -->
                     <!-- myModal -->
-                <!-- <div class="profile-pic">
-                    <a href="userDashboard.html"><img src="images/profile-8.jpg" alt="pic 1" /></a>
-                </div> -->
+                <div class="profile-pic">
+                    <a href="/users/profile/<%= currUser._id %>"><img src="<%= currUser.profile_image.url %>" alt="pic 1" /></a>
+                </div>
             </div>
         </div>
     </nav>
@@ -249,11 +249,11 @@
                         <span><i class="uil uil-home"></i></span>
                         <h3>Home</h3>
                     </a>
-                   
+<!--                    
                     <a class="menu-item ">
                         <span><i class="uil uil-bookmark"></i></span>
                         <h3>Bookmarks</h3>
-                    </a>
+                    </a> -->
                     
                     <a class="menu-item"  href="/users/logout">
                         <span><i id="logoutsign" class="fa-solid fa-arrow-right-from-bracket"></i></span>
@@ -283,11 +283,11 @@
                 <div class="feeds">
                   <% for(room of rooms){ %>
                     <div class="feed">
-
+                        <a href="/users/profile/<%= room.host._id %>">
                       <div class="user">
-                          <!-- <div class="profile-pic">
-                              <img src="images/profile-14.jpg" alt="">
-                          </div> -->
+                          <div class="profile-pic">
+                              <img src="<%= room.host.profile_image.url %>" alt="">
+                          </div>
                           <div class="info">
                             <h3><%= room.host.username %></h3>
                               <small><%= room.createdAt.toDateString() %></small>
@@ -296,7 +296,7 @@
                           </div>
 
                       </div>
-
+                    </a>
                       <div class="photo" style="padding: 8px;">
                         <h5><%= room.title %></h5>
                           <p><%= room.description %></p>
@@ -308,9 +308,9 @@
                                   <span><i class="uil uil-thumbs-up"></i></span>
                               </a> -->
                               <!-- Bookmark icon -->
-                              <a href="#" onclick="showPopup('You saved the post!')">
+                              <!-- <a href="#" onclick="showPopup('You saved the post!')">
                                   <span><i class="uil uil-bookmark"></i></span>
-                              </a>
+                              </a> -->
                           </div>
                           <div class="join">
                               <span><a href="/rooms/meeting?meetingId=<%= room.meetingId %>"><button class="btn btn-primary button-90">

@@ -25,8 +25,8 @@ module.exports.hostMeeting = async (req, res, next) => {
 module.exports.meeting = async (req, res, next) => {
     // console.log(req.user)
     if (req.query.meetingId && req.query.meetingId > 0) {
-      
-        return res.render("rooms/roomDashboard.ejs");
+        let room = await Room.findOne({meetingId: req.query.meetingId});
+        return res.render("rooms/roomDashboard.ejs", {room});
     } else {
         return res.redirect("/");
     }

@@ -36,7 +36,17 @@ const userSchema = new Schema({
     meetingRoom: {
         type: String,
         default: ""
-    }
+    },
+    bio: {
+        type: String,
+    },
+    profile_image: {
+        url: {
+            type: String,
+            default: "https://res.cloudinary.com/dfq5rnahw/image/upload/v1707322333/invito/default-profile-photo_blxuie.avif"
+        },
+        filename: String
+    },
 },{timestamps: true});
 
 userSchema.plugin(passportLocalMongoose);
