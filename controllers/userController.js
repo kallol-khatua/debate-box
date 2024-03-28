@@ -169,3 +169,34 @@ module.exports.editinfo = async (req, res, next) => {
         return next(err);
     }
 }
+
+module.exports.savedebate = async (req, res, next) => {
+    try {
+        // Handle the like logic here, for example, update a database
+        const { roomId } = req.body;
+        let room = await Room.findById(roomId);
+
+        // Perform database update or other actions here
+        // -----------------------------------------------------------------------
+        // if user have already shown interest in some post then the user will not able to send interest again
+        if(room.savefor.includes(req.user._id)) {
+            return res.status(200).json({ success: false, message: 'already saved' });
+        }
+
+        // creater of the post will not be able to send interest
+        if(String(room.host) == String(req.user._id)) { 
+            return res.status(200).json({ success: false, message: 'you are the host' });   
+        }
+
+        room.savefor.push(req.user);
+        await room.save();
+        // req.flash("success", "Response send"); 
+
+        // -----------------------------------------------------------------------
+
+        // Send a response to the client
+        res.status(200).json({ success: true, message: 'debate saved' });
+    } catch (err) {
+        return next(err);
+    }
+}

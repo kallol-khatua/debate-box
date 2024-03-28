@@ -562,6 +562,10 @@ body.dark .btn-close-right {
     margin: 0 4px;
     font-size: 12px;
   }
+  #add-main{
+    max-height: 100vh;
+  }
+  
 }
 /*==================== Devices Between 520px - 720px ====================*/
 @media screen and (min-width: 520px) and (max-width: 720px) {
@@ -599,6 +603,9 @@ body.dark .btn-close-right {
     object-fit: cover;
     border-radius: 10px;
   }
+  #add-main{
+    max-height: 100vh;
+  }
 }
 
 @media screen and (min-width: 720px) and (max-width: 900px) {
@@ -631,6 +638,9 @@ body.dark .btn-close-right {
     height: 100%;
     object-fit: cover;
     border-radius: 10px;
+  }
+  #add-main{
+    max-height: 80vh;
   }
 }
 

@@ -27,4 +27,7 @@ router.post("/updateProfile", isLoggedIn, upload.single("image"), userController
 // edit user info (username, bio);
 router.post("/edit", isLoggedIn, userController.editinfo);
 
+// save a debate for reference
+router.post("/savedebate", isLoggedIn, userController.savedebate);
+
 module.exports = router;

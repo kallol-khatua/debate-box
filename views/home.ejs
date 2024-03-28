@@ -249,11 +249,11 @@
                         <span><i class="uil uil-home"></i></span>
                         <h3>Home</h3>
                     </a>
-<!--                    
+                   
                     <a class="menu-item ">
                         <span><i class="uil uil-bookmark"></i></span>
                         <h3>Bookmarks</h3>
-                    </a> -->
+                    </a>
                     
                     <a class="menu-item"  href="/users/logout">
                         <span><i id="logoutsign" class="fa-solid fa-arrow-right-from-bracket"></i></span>
@@ -308,9 +308,18 @@
                                   <span><i class="uil uil-thumbs-up"></i></span>
                               </a> -->
                               <!-- Bookmark icon -->
-                              <!-- <a href="#" onclick="showPopup('You saved the post!')">
-                                  <span><i class="uil uil-bookmark"></i></span>
-                              </a> -->
+
+                              <% if(room.savefor.includes(String(currUser._id))) { %>
+                                <a>
+                                    <span><i style="color: red;" id="<%= room._id %>" class="uil uil-bookmark"></i></span>
+                                </a>
+                                <% } else { // %>
+                                    <a onclick="savedebate('<%= room._id %>')">
+                                        <span><i id="<%= room._id %>" class="uil uil-bookmark"></i></span>
+                                    </a>
+                                  <% } %>
+
+                              
                           </div>
                           <div class="join">
                               <span><a href="/rooms/meeting?meetingId=<%= room.meetingId %>"><button class="btn btn-primary button-90">
@@ -323,137 +332,7 @@
                 </div>
             </div>
 
-            <!-- <div class="right">
-                <div class="messages">
-                    <div class="heading">
-                        <h4>Messages</h4>
-                        <span><i class="uil uil-edit"></i></span>
-                    </div>
-
-                    <div class="search-bar">
-                        <span><i class="uil uil-search"></i></span>
-                        <input type="search" placeholder="Search Messages" id="message-search">
-                    </div>
-
-                    <div class="category">
-                        <h6 class="active">Primary</h6>
-                        <h6>General</h6>
-                        <h6 class="message-requests">Requests(7)</h6>
-                    </div>
-                    <div class="message">
-                        <div class="profile-pic">
-                            <img src="images/profile-17.jpg">
-                            <div class="active"></div>
-                        </div>
-                        <div class="message-body">
-                            <h5>Kareena Joshua</h5>
-                            <p class="text-muted">Just woke up bruh..</p>
-                        </div>
-                    </div>
-                    <div class="message">
-                        <div class="profile-pic">
-                            <img src="images/profile-18.jpg">
-                            <div class="active"></div>
-                        </div>
-                        <div class="message-body">
-                            <h5>Dan Smith</h5>
-                            <p class="text-bold">2 New Messages</p>
-                        </div>
-                    </div>
-                    <div class="message">
-                        <div class="profile-pic">
-                            <img src="images/profile-15.jpg">
-                        </div>
-                        <div class="message-body">
-                            <h5>Chris Brown</h5>
-                            <p class="text-muted">Lol u right</p>
-                        </div>
-                    </div>
-                    <div class="message">
-                        <div class="profile-pic">
-                            <img src="images/profile-14.jpg">
-                        </div>
-                        <div class="message-body">
-                            <h5>Lana Rose</h5>
-                            <p class="text-bold">Birthday tomorrow!!</p>
-                        </div>
-                    </div>
-                    <div class="message">
-                        <div class="profile-pic">
-                            <img src="images/profile-11.jpg">
-                        </div>
-                        <div class="message-body">
-                            <h5>Varun Nair</h5>
-                            <p class="text-muted">Ssup?</p>
-                        </div>
-                    </div>
-                    <div class="message">
-                        <div class="profile-pic">
-                            <img src="images/profile-1.jpg">
-                            <div class="active"></div>
-                        </div>
-                        <div class="message-body">
-                            <h5>Jahnvi Doifode</h5>
-                            <p class="text-bold">3 New Messages</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="friend-requests">
-                    <h4>Requests</h4>
-                    <div class="request">
-                        <div class="info">
-                            <div class="profile-pic">
-                                <img src="images/profile-13.jpg">
-                            </div>
-                            <div>
-                                <h5>Wilson Fisk</h5>
-                                <p class="text-muted">8 mutual friends</p>
-
-                            </div>
-                        </div>
-                        <div class="action">
-                            <button class="btn btn-primary">Accept</button>
-                            <button class="btn">Decline</button>
-                        </div>
-                    </div>
-                    <div class="request">
-                        <div class="info">
-                            <div class="profile-pic">
-                                <img src="images/profile-20.jpg">
-                            </div>
-                            <div>
-                                <h5>Srishti Tirkey</h5>
-                                <p class="text-muted">2 mutual friends</p>
-
-                            </div>
-                        </div>
-                        <div class="action">
-                            <button class="btn btn-primary">Accept</button>
-                            <button class="btn">Decline</button>
-                        </div>
-                    </div>
-                    <div class="request">
-                        <div class="info">
-                            <div class="profile-pic">
-                                <img src="images/profile-5.jpg">
-                            </div>
-                            <div>
-                                <h5>Christ Kahea</h5>
-                                <p class="text-muted">1 mutual friend</p>
-
-                            </div>
-                        </div>
-                        <div class="action">
-                            <button class="btn btn-primary">Accept</button>
-                            <button class="btn">Decline</button>
-                        </div>
-                    </div>
-
-                </div>
-
-
-
-            </div> -->
+            
         </div>
     </main>
 
@@ -470,6 +349,35 @@
             setTimeout(function () {
                 popup.style.display = "none";
             }, 2000);
+        }
+
+        function savedebate(data) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "/users/savedebate", true);
+            xhr.setRequestHeader(
+              "Content-Type",
+              "application/x-www-form-urlencoded"
+            );
+
+            const senddata = `roomId=${data}`;
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            // console.log(response.message);
+                            document.getElementById(data).style.color = "red"
+                        } else {
+                            console.log(response.message);
+                        }
+                    } else {
+                        alert("Error occurred while making the request");
+                    }
+                }
+            };
+        
+            xhr.send(senddata);
         }
     </script>
 </body>

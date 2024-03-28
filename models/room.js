@@ -21,7 +21,13 @@ const roomSchema = new Schema({
     isOver: {
         type: Boolean,
         default: false
-    }
+    },
+    savefor: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "User"
+        }
+    ]
 },{timestamps: true});
 
 const Room = mongoose.model('Room', roomSchema);
