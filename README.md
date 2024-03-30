@@ -46,50 +46,60 @@ DEBATEBOX is a dynamic online platform designed for hosting engaging and interac
   </ol>
 </details>
 
-### Prerequisites
+## Prerequisites:
 
-Install node.js in your local system. 
-* npm
-  sh
+Install node.js in your local system.
+
+- npm
+  ```sh
   npm install npm@latest -g
-  
-* nodemonc
-  sh
+  ```
+- nodemon
+  ```sh
   npm install -g nodemon
-  
+  ```
 
-### Installation
+## Installation:
 
 1. Clone the repo
-   sh
+   ```sh
    git clone https://github.com/kallol-khatua/debate-box.git
-   
+   ```
 2. Install NPM packages
-   sh
+   ```sh
    npm install
-   
-3. Enter your API in .env
-   sh
+   ```
+3. Enter your API in `.env`
+   ```sh
    CLOUD_NAME=<Enter your cloudinary cloud name>
-   
-   sh
+   ```
+   ```sh
     CLOUD_API_KEY=<Enter your cloudinary cloud api key>
-    
-    sh
+    ```
+    ```sh
     CLOUD_API_SECRET=<Enter your cloudinary cloud api secret>
-    
-   sh
+    ```
+   ```sh
     ATLAS_URL=<Enter your mongodb atlas url>
-   
-   sh
-    SECRET=ADNADKJ638HEQWD8913E8HDKhsw8qe8i
-   
+   ```
+   ```sh
+    SECRET=<Enter your secret code>
+   ```
+   ```sh
+    EMAIL_USER=<Enter your google email id>
+   ```
+   ```sh
+    EMAIL_USER_NAME=<Enter your email username>
+   ```
+   ```sh
+    EMAIL_PASS=<Enter your app password for nodemailer>
+   ```
+
 4. Run
-    sh
+    ```sh
    npm run dev
-   
+   ```
 
-
-## License
+## License:
 
 Distributed under the ISC License.
