@@ -336,15 +336,17 @@
                               </a> -->
                               <!-- Bookmark icon -->
 
-                              <% if(room.savefor.includes(String(currUser._id))) { %>
-                                <a onclick="unsavedebate('<%= room._id %>')">
-                                    <span><i style="color: red;" id="<%= room._id %>" class="uil uil-bookmark"></i></span>
-                                </a>
+                            <% if(room.host._id.toString() != String(currUser._id)) { %>
+                                <% if(room.savefor.includes(String(currUser._id))) { %>
+                                    <a onclick="unsavedebate('<%= room._id %>')">
+                                        <span><i style="color: red;" id="<%= room._id %>" class="uil uil-bookmark"></i></span>
+                                     </a>
                                 <% } else { // %>
                                     <a onclick="savedebate('<%= room._id %>')">
                                         <span><i id="<%= room._id %>" class="uil uil-bookmark"></i></span>
                                     </a>
-                                  <% } %>
+                                <% } %>
+                            <% } %>
 
                               
                           </div>
@@ -385,7 +387,11 @@
                             let tab = document.getElementById("show-bookmark");
                             let html = "";
                             rooms.forEach(room => {
-                                html += `<li>${room.title}</li><hr>`
+                                html += `<li>${room.title}<div class="join">
+                              <span><a href="/rooms/meeting?meetingId=${ room.meetingId }"><button class="btn btn-primary button-90">
+                                      join
+                                  </button></span></a>
+                          </div></li><hr>`
 
                                     
                             });
@@ -466,11 +472,11 @@
                         const response = JSON.parse(xhr.responseText);
                         if (response.success) {
                             var popup = document.getElementById("popup");
-                                        
+
                             popup.innerHTML = '<p>' + "Unsaved" + '</p>';
-                                        
+
                             popup.style.display = "block";
-                                        
+
                             setTimeout(function () {
                                 popup.style.display = "none";
                             }, 2000);

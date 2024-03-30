@@ -541,7 +541,8 @@ body.dark .btn-close-right {
     left: 16px;
   }
   .video-call-actions {
-    padding-top: 32px;
+    padding-bottom: 32px;
+    padding-top: 5px;
   }
   .video-action-button {
     width: 32px;
@@ -564,6 +565,11 @@ body.dark .btn-close-right {
   }
   #add-main{
     max-height: 100vh;
+    /* display: flex;
+    flex-direction: column-reverse; */
+  }
+  #videoPlayer{
+    height: 80%;
   }
   
 }
