@@ -408,16 +408,7 @@
         }
 
         function savedebate(data) {
-            var popup = document.getElementById("popup");
-
-            popup.innerHTML = '<p>' + "Saved" + '</p>';
-
-            popup.style.display = "block";
-
-            setTimeout(function () {
-                popup.style.display = "none";
-            }, 2000);
-
+           
 
             const xhr = new XMLHttpRequest();
             xhr.open("POST", "/users/savedebate", true);
@@ -433,6 +424,16 @@
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
                         if (response.success) {
+                            var popup = document.getElementById("popup");
+
+                            popup.innerHTML = '<p>' + "Saved" + '</p>';
+
+                            popup.style.display = "block";
+
+                            setTimeout(function () {
+                                popup.style.display = "none";
+                            }, 2000);
+
                             document.getElementById(data).parentElement.parentElement.outerHTML = `<a onclick="unsavedebate('${data}')">
                                 <span><i style="color: red;" id="${data}" class="uil uil-bookmark"></i></span>
                                     </a>`
@@ -449,16 +450,6 @@
         }
 
         function unsavedebate(data) {
-            var popup = document.getElementById("popup");
-
-            popup.innerHTML = '<p>' + "Unsaved" + '</p>';
-
-            popup.style.display = "block";
-
-            setTimeout(function () {
-                popup.style.display = "none";
-            }, 2000);
-
 
             const xhr = new XMLHttpRequest();
             xhr.open("POST", "/users/unsavedebate", true);
@@ -474,6 +465,16 @@
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
                         if (response.success) {
+                            var popup = document.getElementById("popup");
+                                        
+                            popup.innerHTML = '<p>' + "Unsaved" + '</p>';
+                                        
+                            popup.style.display = "block";
+                                        
+                            setTimeout(function () {
+                                popup.style.display = "none";
+                            }, 2000);
+
                             document.getElementById(data).parentElement.parentElement.outerHTML = `<a onclick="savedebate('${data}')">
                                 <span><i id="${data}" class="uil uil-bookmark"></i></span>
                                     </a>`
