@@ -178,14 +178,12 @@ module.exports.savedebate = async (req, res, next) => {
 
         // Perform database update or other actions here
         // -----------------------------------------------------------------------
-        // if user have already shown interest in some post then the user will not able to send interest again
-        if(room.savefor.includes(req.user._id)) {
+        if (room.savefor.includes(req.user._id)) {
             return res.status(200).json({ success: false, message: 'already saved' });
         }
 
-        // creater of the post will not be able to send interest
-        if(String(room.host) == String(req.user._id)) { 
-            return res.status(200).json({ success: false, message: 'you are the host' });   
+        if (String(room.host) == String(req.user._id)) {
+            return res.status(200).json({ success: false, message: 'you are the host' });
         }
 
         room.savefor.push(req.user);
@@ -196,6 +194,57 @@ module.exports.savedebate = async (req, res, next) => {
 
         // Send a response to the client
         res.status(200).json({ success: true, message: 'debate saved' });
+    } catch (err) {
+        return next(err);
+    }
+}
+
+module.exports.unsavedebate = async (req, res, next) => {
+    try {
+        // Handle the like logic here, for example, update a database
+        const { roomId } = req.body;
+        let room = await Room.findById(roomId);
+        
+        // Perform database update or other actions here
+        // -----------------------------------------------------------------------
+        if (room.savefor.includes(req.user._id)) {
+            var index = room.savefor.indexOf(req.user._id); 
+            if (index > -1) {
+                room.savefor.splice(index, 1); 
+            }
+            
+            await room.save();
+            return res.status(200).json({ success: true, message: 'unsaved' });
+
+        }
+
+        // -----------------------------------------------------------------------
+
+        // Send a response to the client
+        res.status(200).json({ success: false, message: 'saved first' });
+    } catch (err) {
+        return next(err);
+    }
+}
+
+module.exports.bookmark = async (req, res, next) => {
+    try {
+        let rooms = await Room.find({});
+        // room.savefor.includes(req.user._id)
+        // console.log(rooms)
+        // for(room of rooms){
+        //     console.log(room);
+        //     console.log(room.savefor.includes(req.user._id))
+        // }
+        rooms = rooms.filter(room => {
+            return room.savefor.includes(req.user._id);
+        })
+        // console.log(rooms)
+        if(rooms && rooms.length > 0) {
+            res.status(200).json({ success: true, message: 'rooms found', rooms: rooms });
+        } else {
+            res.status(200).json({ success: false, message: 'saved first' });
+        }
     } catch (err) {
         return next(err);
     }

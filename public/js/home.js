@@ -18,12 +18,6 @@ menuItems.forEach(item => {
         changeActiveItem();
         item.classList.add('active');
         
-        if (item.id != 'notifications') {
-            document.querySelector('.notifications-popup').style.display = 'none';
-        } else {
-            document.querySelector('.notifications-popup').style.display = 'block';
-            document.querySelector('#notifications .notification-count').style.display='none';
-        }
     })
 })
 
@@ -40,3 +34,9 @@ const searchMessage = () => {
     })
 }
 
+const closeBookmark = document.getElementById("close-bookmark");
+closeBookmark.addEventListener("click", () => {
+    changeActiveItem();
+    let homeMenu = document.getElementById("home-menu");
+    homeMenu.classList.add('active');
+})

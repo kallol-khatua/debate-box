@@ -338,8 +338,8 @@ button + button {
 			<input type="checkbox" id="switch-mode" hidden>
 			<label for="switch-mode" class="switch-mode"></label>
 
-			<a href="./<%= currUser._id %>" class="profile">
-				<img src="<%= currUser.profile_image.url %>">
+			<a href="./<%= user._id %>" class="profile">
+				<img src="<%= user.profile_image.url %>">
 			</a>
 		</nav>
 		<!-- NAVBAR -->
@@ -349,6 +349,7 @@ button + button {
 			<div class="head-title">
 				<div class="left">
 					<h1>Dashboard</h1>
+                    
 					<!-- <ul class="breadcrumb">
 						<li>
 							<a href="#">Dashboard</a>
@@ -359,11 +360,17 @@ button + button {
 						</li>
 					</ul> -->
 				</div>
+                
 				<!-- <a href="#" class="btn-download">
 					<i class='bx bxs-cloud-download'></i>
 					<span class="text">Download PDF</span>
 				</a> -->
 			</div>
+            
+            <div class="user-bio">
+                
+                <p><%= user.bio %></p>
+            </div>
 
 			<ul class="box-info">
 				<li>

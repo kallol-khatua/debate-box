@@ -240,17 +240,44 @@
         </div>
     </nav>
 
+    <!-- The Modal -->
+    <div class="modal fade" id="bookmark">
+        <div class="modal-dialog">
+          <div class="modal-content">
+          
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">You saved this debates for future reference</h4>
+              <button type="button" class="close" data-dismiss="modal"></button>
+            </div>
+  
+            <!-- Modal Body -->
+            <div class="modal-body">
+             <ul id="show-bookmark">
+                
+             </ul>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-bookmark">Close</button>
+            </div>
+          
+          </div>
+        </div>
+      </div>
+
     <main>
         <div class="container">
             <div class="left">
 
                 <div class="sidebar">
-                    <a class="menu-item active">
+                    <a class="menu-item active" id="home-menu">
                         <span><i class="uil uil-home"></i></span>
                         <h3>Home</h3>
                     </a>
                    
-                    <a class="menu-item ">
+                    <a class="menu-item " data-bs-toggle="modal" data-bs-target="#bookmark" onclick="bookmark()">
                         <span><i class="uil uil-bookmark"></i></span>
                         <h3>Bookmarks</h3>
                     </a>
@@ -310,7 +337,7 @@
                               <!-- Bookmark icon -->
 
                               <% if(room.savefor.includes(String(currUser._id))) { %>
-                                <a>
+                                <a onclick="unsavedebate('<%= room._id %>')">
                                     <span><i style="color: red;" id="<%= room._id %>" class="uil uil-bookmark"></i></span>
                                 </a>
                                 <% } else { // %>
@@ -339,19 +366,59 @@
     <script src="/js/home.js"></script>
     <script>
 
-        function showPopup(message) {
+        function bookmark() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "/users/bookmark", true);
+            xhr.setRequestHeader(
+              "Content-Type",
+              "application/x-www-form-urlencoded"
+            );
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            // console.log(response.message);
+                            // console.log(response.rooms);
+                            let rooms = response.rooms;
+                            let tab = document.getElementById("show-bookmark");
+                            let html = "";
+                            rooms.forEach(room => {
+                                html += `<li>${room.title}</li><hr>`
+
+                                    
+                            });
+                            tab.innerHTML = "";
+                            tab.insertAdjacentHTML("afterbegin", html)
+                        } else {
+                            console.log(response.message);
+                            let tab = document.getElementById("show-bookmark");
+                            let html = "No debates saved for reference! Save a debate";
+                            tab.innerHTML = "";
+                            tab.insertAdjacentHTML("afterbegin", html)
+                        }
+                    } else {
+                        alert("Error occurred while making the request");
+                    }
+                }
+            };
+        
+            xhr.send();
+        }
+
+        function savedebate(data) {
             var popup = document.getElementById("popup");
 
-            popup.innerHTML = '<p>' + message + '</p>';
+            popup.innerHTML = '<p>' + "Saved" + '</p>';
 
             popup.style.display = "block";
 
             setTimeout(function () {
                 popup.style.display = "none";
             }, 2000);
-        }
 
-        function savedebate(data) {
+
             const xhr = new XMLHttpRequest();
             xhr.open("POST", "/users/savedebate", true);
             xhr.setRequestHeader(
@@ -366,8 +433,50 @@
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
                         if (response.success) {
-                            // console.log(response.message);
-                            document.getElementById(data).style.color = "red"
+                            document.getElementById(data).parentElement.parentElement.outerHTML = `<a onclick="unsavedebate('${data}')">
+                                <span><i style="color: red;" id="${data}" class="uil uil-bookmark"></i></span>
+                                    </a>`
+                        } else {
+                            console.log(response.message);
+                        }
+                    } else {
+                        alert("Error occurred while making the request");
+                    }
+                }
+            };
+        
+            xhr.send(senddata);
+        }
+
+        function unsavedebate(data) {
+            var popup = document.getElementById("popup");
+
+            popup.innerHTML = '<p>' + "Unsaved" + '</p>';
+
+            popup.style.display = "block";
+
+            setTimeout(function () {
+                popup.style.display = "none";
+            }, 2000);
+
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "/users/unsavedebate", true);
+            xhr.setRequestHeader(
+              "Content-Type",
+              "application/x-www-form-urlencoded"
+            );
+
+            const senddata = `roomId=${data}`;
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            document.getElementById(data).parentElement.parentElement.outerHTML = `<a onclick="savedebate('${data}')">
+                                <span><i id="${data}" class="uil uil-bookmark"></i></span>
+                                    </a>`
                         } else {
                             console.log(response.message);
                         }

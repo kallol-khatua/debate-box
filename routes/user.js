@@ -30,4 +30,10 @@ router.post("/edit", isLoggedIn, userController.editinfo);
 // save a debate for reference
 router.post("/savedebate", isLoggedIn, userController.savedebate);
 
+// unsave a debate for reference
+router.post("/unsavedebate", isLoggedIn, userController.unsavedebate);
+
+// get bookmark posts
+router.get("/bookmark", isLoggedIn, userController.bookmark);
+
 module.exports = router;
