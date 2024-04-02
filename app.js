@@ -241,6 +241,7 @@ app.get("/main", isLoggedIn, isVerified, async (req, res, next) => {
 app.use("/users", userRouter);
 app.use("/rooms", roomRouter);
 
-server.listen(process.env.PORT || 8080, () => {
-    console.log("listening to post 8080");
+const PORT = process.env.PORT;
+server.listen(PORT || 8080, () => {
+    console.log(`listening to post ${PORT}`);
 });
